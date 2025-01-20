@@ -58,15 +58,18 @@
                 pdf.text(`Học viên: ${studentName}`, 20, 40);
                 pdf.text(`Khóa học: ${courseName}`, 20, 50);
 
-                // Thêm hình ảnh vào PDF
-                const imageUrl = "https://i.imgur.com/albGpgO.jpg";
-                const img = await fetch(imageUrl).then(res => res.blob());
-                const imgBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(img);
-                });
-                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120);
+                // Thêm hình ảnh vào PDF với nén
+                    const imageUrl = "https://i.imgur.com/albGpgO.jpg";
+                    const img = await fetch(imageUrl).then(res => res.blob());
+                    const imgBase64 = await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.readAsDataURL(img);
+                    });
+
+                // Nén ảnh JPEG (chỉ định chất lượng 0.5 để giảm kích thước)
+                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120, undefined, "FAST", 0.5);
+
 
                 // Trả về PDF dưới dạng base64
                 return pdf.output("datauristring");
