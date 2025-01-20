@@ -74,7 +74,7 @@
         async function sendEmail(recipientEmail, studentName, courseName, centerName) {
             try {
                 // Khởi tạo EmailJS
-                emailjs.init("your_user_id");
+                emailjs.init("6q3zUEAeQ3EKysg6Y");
 
                 // Tạo file PDF
                 const pdfBase64 = await createPDF(studentName, courseName);
@@ -96,7 +96,7 @@
                 `;
 
                 // Gửi email qua EmailJS
-                await emailjs.send("service_id", "template_id", {
+                await emailjs.send("service_thphcyi", "template_qu58yjn", {
                     to_email: recipientEmail,
                     subject: emailSubject,
                     message: emailBody,
