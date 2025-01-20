@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Email with PDF Link</title>
+    <title>Send Email with Image Link</title>
     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <style>
@@ -18,72 +18,35 @@
         h2 {
             color: #F44336;
         }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <h1>Đang gửi email...</h1>
+    <div class="spinner"></div>
 
     <script>
-        async function createPDF(studentName, courseName) {
-            try {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: "Portrait",
-                    unit: "px",
-                    format: [500, 353.622], // Khổ giấy
-                });
-
-                // Sử dụng font mặc định "Helvetica"
-                pdf.setFont("helvetica");
-
-                // Thêm text vào PDF
-                pdf.setFontSize(16);
-                pdf.text("CHỨNG NHẬN HOÀN THÀNH KHÓA HỌC", 105, 20, { align: "center" });
-                pdf.setFontSize(12);
-                pdf.text(`Học viên: ${studentName}`, 20, 40);
-                pdf.text(`Khóa học: ${courseName}`, 20, 50);
-
-                // Thêm hình ảnh vào PDF với nén
-                const imageUrl = "https://i.imgur.com/albGpgO.jpg";
-                const img = await fetch(imageUrl).then(res => res.blob());
-                const imgBase64 = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result);
-                    reader.readAsDataURL(img);
-                });
-
-                // Nén ảnh JPEG (chỉ định chất lượng 0.3 để giảm kích thước)
-                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120, undefined, "FAST", 0.3);
-
-                // Lưu file PDF và trả về URL
-                const pdfBlob = pdf.output("blob");
-
-                // Tạo URL tải xuống cho PDF
-                const url = URL.createObjectURL(pdfBlob);
-                console.log(`URL tải về: ${url}`);
-
-                // Trả về URL tải về PDF
-                return url;
-            } catch (error) {
-                console.error("Error creating PDF:", error);
-                throw new Error("Lỗi khi tạo PDF");
-            }
-        }
-
         async function sendEmail(recipientEmail, studentName, courseName, centerName) {
             try {
                 // Khởi tạo EmailJS
                 emailjs.init("6q3zUEAeQ3EKysg6Y");
 
-                // Tạo file PDF và lấy URL tải về
-                const pdfUrl = await createPDF(studentName, courseName);
+                // Đường link ảnh (Giả sử bạn có sẵn link của ảnh muốn đính kèm)
+                const imageUrl = "https://i.imgur.com/Gappvr5.jpg"; // Đường dẫn ảnh mà bạn muốn gửi
 
-                // Kiểm tra xem URL có hợp lệ không
-                if (!pdfUrl || pdfUrl === "") {
-                    throw new Error("URL không hợp lệ");
-                }
-
-                // Gửi email với nội dung và đường link tải PDF
+                // Gửi email với nội dung và đường link ảnh
                 const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
                 const emailBody = `
                     RIEM XÁC NHẬN:
@@ -91,7 +54,8 @@
 
                     Học viên ${studentName}, mã nhân viên: ${id} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
 
-                    Tải về chứng nhận từ liên kết sau: <a href="${pdfUrl}" target="_blank">Tải về PDF</a>
+                    Anh/chị có thể xem ảnh chứng nhận tại liên kết sau:
+                    <a href="${imageUrl}" target="_blank">${imageUrl}</a>
 
                     Trân trọng.
                 `;
@@ -105,13 +69,13 @@
                     student_name: studentName,       // Truyền tên học viên vào template
                     course_name: courseName,         // Truyền tên khóa học vào template
                     sender_name: "Your Name",        // Tên người gửi
+                    image_link: imageUrl,            // Truyền đường link ảnh vào template
                 });
 
                 // Thông báo gửi email thành công
                 document.body.innerHTML = `
                     <h1>Email xác nhận đã được gửi!</h1>
-                    <p>Certificate has been sent to ${recipientEmail}.</p>
-                    <p><a href="${pdfUrl}" target="_blank">Tải về chứng nhận tại đây</a></p>
+                    <p>Image link has been sent to ${recipientEmail}.</p>
                 `;
             } catch (error) {
                 // Xử lý lỗi nếu có
