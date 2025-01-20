@@ -115,15 +115,29 @@
         const studentName = localStorage.getItem("studentName");
         const centerName = localStorage.getItem("tencs");
 
-        // Kiểm tra dữ liệu và gửi email
-        if (recipientEmail && courseName && studentName && centerName) {
-            sendEmail(recipientEmail, studentName, courseName, centerName);
-        } else {
-            document.body.innerHTML = `
-                <h2>Error</h2>
-                <p>Missing email data. Please try again.</p>
-            `;
-        }
+       // Kiểm tra dữ liệu và xác định dữ liệu thiếu
+const missingData = [];
+if (!recipientEmail) missingData.push("Địa chỉ email");
+if (!courseName) missingData.push("Tên khóa học");
+if (!studentName) missingData.push("Tên học viên");
+if (!centerName) missingData.push("Tên cơ sở");
+
+// Nếu có dữ liệu thiếu, hiển thị thông báo lỗi rõ ràng
+if (missingData.length > 0) {
+    document.body.innerHTML = `
+        <h2>Thiếu dữ liệu</h2>
+        <p>Các dữ liệu sau đang bị thiếu:</p>
+        <ul>
+            ${missingData.map(data => `<li>${data}</li>`).join("")}
+        </ul>
+        <p>Vui lòng kiểm tra lại dữ liệu và thử lại.</p>
+    `;
+    console.error("Dữ liệu bị thiếu:", missingData);
+} else {
+    // Nếu đủ dữ liệu, tiến hành gửi email
+    sendEmail(recipientEmail, studentName, courseName, centerName);
+}
+        
     </script>
 </body>
 </html>
