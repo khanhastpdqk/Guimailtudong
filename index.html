@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Email with PDF</title>
+    <title>Send Email with PDF Link</title>
     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <style>
@@ -18,24 +18,10 @@
         h2 {
             color: #F44336;
         }
-        .spinner {
-            border: 6px solid #f3f3f3;
-            border-top: 6px solid #4CAF50;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
     <h1>Đang gửi email...</h1>
-    <div class="spinner"></div>
 
     <script>
         async function createPDF(studentName, courseName) {
@@ -74,13 +60,10 @@
 
                 // Tạo URL tải xuống cho PDF
                 const url = URL.createObjectURL(pdfBlob);
+                console.log(`URL tải về: ${url}`);
 
-                // Hiển thị URL tải về
-                document.body.innerHTML += `
-                    <h2><a href="${url}" target="_blank">Tải về PDF</a></h2>
-                `;
-                
-                return url;  // Trả về URL tải về
+                // Trả về URL tải về PDF
+                return url;
             } catch (error) {
                 console.error("Error creating PDF:", error);
                 throw new Error("Lỗi khi tạo PDF");
