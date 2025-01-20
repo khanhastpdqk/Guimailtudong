@@ -95,7 +95,7 @@
                     RIEM XÁC NHẬN:
                     Dear anh/chị đầu mối cơ sở ${centerName},
 
-                    Học viên ${studentName}, mã nhân viên: ${studentName} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
+                    Học viên ${studentName}, mã nhân viên: ${id} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
 
                     Trân trọng.
                 `;
@@ -133,6 +133,7 @@
         const courseName = urlParams.get("course");
         const studentName = urlParams.get("name");
         const centerName = urlParams.get("center");
+        const id = urlParams.get("id");
 
         console.log("URL search:", window.location.search);
         console.log("recipientEmail:", recipientEmail);
