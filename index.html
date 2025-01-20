@@ -39,30 +39,36 @@
 
     <script>
         async function createPDF(studentName, courseName) {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF();
 
-            // Sử dụng font mặc định
-            pdf.setFont("helvetica");
+                // Sử dụng font mặc định "Helvetica"
+                pdf.setFont("helvetica");
 
-            // Thêm text
-            pdf.setFontSize(16);
-            pdf.text(`CHỨNG NHẬN HOÀN THÀNH KHÓA HỌC`, 105, 20, { align: "center" });
-            pdf.setFontSize(12);
-            pdf.text(`Học viên: ${studentName}`, 20, 40);
-            pdf.text(`Khóa học: ${courseName}`, 20, 50);
+                // Thêm text vào PDF
+                pdf.setFontSize(16);
+                pdf.text("CHỨNG NHẬN HOÀN THÀNH KHÓA HỌC", 105, 20, { align: "center" });
+                pdf.setFontSize(12);
+                pdf.text(`Học viên: ${studentName}`, 20, 40);
+                pdf.text(`Khóa học: ${courseName}`, 20, 50);
 
-            // Thêm hình nền
-            const imageUrl = "https://i.imgur.com/Rhvxj8Z.jpg";
-            const img = await fetch(imageUrl).then(res => res.blob());
-            const imgBase64 = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(img);
-            });
-            pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120);
+                // Thêm hình ảnh vào PDF
+                const imageUrl = "https://i.imgur.com/Rhvxj8Z.jpg";
+                const img = await fetch(imageUrl).then(res => res.blob());
+                const imgBase64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(img);
+                });
+                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120);
 
-            return pdf.output("datauristring");
+                // Trả về PDF dưới dạng base64
+                return pdf.output("datauristring");
+            } catch (error) {
+                console.error("Error creating PDF:", error);
+                throw new Error("Lỗi khi tạo PDF");
+            }
         }
 
         async function sendEmail(recipientEmail, studentName, courseName, centerName) {
@@ -72,6 +78,11 @@
 
                 // Tạo file PDF
                 const pdfBase64 = await createPDF(studentName, courseName);
+
+                // Kiểm tra xem PDF có hợp lệ không
+                if (!pdfBase64 || pdfBase64 === "") {
+                    throw new Error("PDF không hợp lệ");
+                }
 
                 // Gửi email với nội dung và file đính kèm
                 const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
@@ -84,12 +95,7 @@
                     Trân trọng.
                 `;
 
-                // Kiểm tra xem pdfBase64 có hợp lệ không
-                if (!pdfBase64 || pdfBase64 === "") {
-                    throw new Error("PDF không hợp lệ");
-                }
-
-                // Gửi email
+                // Gửi email qua EmailJS
                 await emailjs.send("service_id", "template_id", {
                     to_email: recipientEmail,
                     subject: emailSubject,
@@ -97,17 +103,18 @@
                     pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
                 });
 
-                // Hiển thị thông báo sau khi gửi thành công
+                // Thông báo gửi email thành công
                 document.body.innerHTML = `
                     <h1>Email xác nhận đã được gửi!</h1>
                     <p>Certificate has been sent to ${recipientEmail}.</p>
                 `;
             } catch (error) {
-                // Hiển thị lỗi nếu có
+                // Xử lý lỗi nếu có
                 document.body.innerHTML = `
                     <h2>Error sending email</h2>
                     <p>${error.message}</p>
                 `;
+                console.error("Error sending email:", error);
             }
         }
 
