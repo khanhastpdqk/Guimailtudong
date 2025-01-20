@@ -42,8 +42,8 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
 
-            // Tạm thời bỏ qua font tùy chỉnh để kiểm tra
-            pdf.setFont("helvetica"); // Sử dụng font mặc định của jsPDF
+            // Sử dụng font mặc định
+            pdf.setFont("helvetica");
 
             // Thêm text
             pdf.setFontSize(16);
@@ -66,73 +66,86 @@
         }
 
         async function sendEmail(recipientEmail, studentName, courseName, centerName) {
-            // Khởi tạo EmailJS
-            emailjs.init("your_user_id");
+            try {
+                // Khởi tạo EmailJS
+                emailjs.init("your_user_id");
 
-            // Tạo file PDF
-            const pdfBase64 = await createPDF(studentName, courseName);
+                // Tạo file PDF
+                const pdfBase64 = await createPDF(studentName, courseName);
 
-            // Gửi email với nội dung và file đính kèm
-            const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
-            const emailBody = `
-                RIEM XÁC NHẬN:
-                Dear anh/chị đầu mối cơ sở ${centerName},
+                // Gửi email với nội dung và file đính kèm
+                const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
+                const emailBody = `
+                    RIEM XÁC NHẬN:
+                    Dear anh/chị đầu mối cơ sở ${centerName},
 
-                Học viên ${studentName} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
+                    Học viên ${studentName} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
 
-                Trân trọng.
-            `;
+                    Trân trọng.
+                `;
 
-            emailjs.send("service_id", "template_id", {
-                to_email: recipientEmail,
-                subject: emailSubject,
-                message: emailBody,
-                pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
-            })
-            .then(() => {
+                // Kiểm tra xem pdfBase64 có hợp lệ không
+                if (!pdfBase64 || pdfBase64 === "") {
+                    throw new Error("PDF không hợp lệ");
+                }
+
+                // Gửi email
+                await emailjs.send("service_id", "template_id", {
+                    to_email: recipientEmail,
+                    subject: emailSubject,
+                    message: emailBody,
+                    pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
+                });
+
+                // Hiển thị thông báo sau khi gửi thành công
                 document.body.innerHTML = `
                     <h1>Email xác nhận đã được gửi!</h1>
                     <p>Certificate has been sent to ${recipientEmail}.</p>
                 `;
-            })
-            .catch((error) => {
+            } catch (error) {
+                // Hiển thị lỗi nếu có
                 document.body.innerHTML = `
                     <h2>Error sending email</h2>
-                    <p>${error.text}</p>
+                    <p>${error.message}</p>
                 `;
-            });
+            }
         }
 
-       const urlParams = new URLSearchParams(window.location.search);
-const recipientEmail = urlParams.get("email");
-const courseName = urlParams.get("course");
-const studentName = urlParams.get("name");
-const centerName = urlParams.get("center");
+        // Lấy tham số từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipientEmail = urlParams.get("email");
+        const courseName = urlParams.get("course");
+        const studentName = urlParams.get("name");
+        const centerName = urlParams.get("center");
+
+        console.log("URL search:", window.location.search);
+        console.log("recipientEmail:", recipientEmail);
+        console.log("courseName:", courseName);
+        console.log("studentName:", studentName);
+        console.log("centerName:", centerName);
 
         // Kiểm tra dữ liệu và xác định dữ liệu thiếu
-const missingData = [];
-if (!recipientEmail) missingData.push("Địa chỉ email");
-if (!courseName) missingData.push("Tên khóa học");
-if (!studentName) missingData.push("Tên học viên");
-if (!centerName) missingData.push("Tên cơ sở");
+        const missingData = [];
+        if (!recipientEmail) missingData.push("Địa chỉ email");
+        if (!courseName) missingData.push("Tên khóa học");
+        if (!studentName) missingData.push("Tên học viên");
+        if (!centerName) missingData.push("Tên cơ sở");
 
-// Nếu có dữ liệu thiếu, hiển thị thông báo lỗi rõ ràng
-if (missingData.length > 0) {
-    document.body.innerHTML = `
-        <h2>Thiếu dữ liệu</h2>
-        <p>Các dữ liệu sau đang bị thiếu:</p>
-        <ul>
-            ${missingData.map(data => `<li>${data}</li>`).join("")}
-        </ul>
-        <p>Vui lòng kiểm tra lại dữ liệu và thử lại.</p>
-    `;
-    console.error("Dữ liệu bị thiếu:", missingData);
-} else {
-    // Nếu đủ dữ liệu, tiến hành gửi email
-    sendEmail(recipientEmail, studentName, courseName, centerName);
-}
-        
-        
+        // Nếu có dữ liệu thiếu, hiển thị thông báo lỗi rõ ràng
+        if (missingData.length > 0) {
+            document.body.innerHTML = `
+                <h2>Thiếu dữ liệu</h2>
+                <p>Các dữ liệu sau đang bị thiếu:</p>
+                <ul>
+                    ${missingData.map(data => `<li>${data}</li>`).join("")}
+                </ul>
+                <p>Vui lòng kiểm tra lại dữ liệu và thử lại.</p>
+            `;
+            console.error("Dữ liệu bị thiếu:", missingData);
+        } else {
+            // Nếu đủ dữ liệu, tiến hành gửi email
+            sendEmail(recipientEmail, studentName, courseName, centerName);
+        }
     </script>
 </body>
 </html>
