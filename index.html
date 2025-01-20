@@ -78,4 +78,54 @@
                     <h1>Email xác nhận đã được gửi!</h1>
                     <p>Image link has been sent to ${recipientEmail}.</p>
                 `;
-            
+            } catch (error) {
+                // Xử lý lỗi nếu có
+                document.body.innerHTML = `
+                    <h2>Error sending email</h2>
+                    <p>${error.message}</p>
+                `;
+                console.error("Error sending email:", error);
+            }
+        }
+
+        // Lấy tham số từ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const recipientEmail = urlParams.get("email");
+        const courseName = urlParams.get("course");
+        const studentName = urlParams.get("name");
+        const centerName = urlParams.get("center");
+        const id = urlParams.get("id");
+
+        console.log("URL search:", window.location.search);
+        console.log("recipientEmail:", recipientEmail);
+        console.log("courseName:", courseName);
+        console.log("studentName:", studentName);
+        console.log("centerName:", centerName);
+        console.log("id:", id);
+
+        // Kiểm tra dữ liệu và xác định dữ liệu thiếu
+        const missingData = [];
+        if (!recipientEmail) missingData.push("Địa chỉ email");
+        if (!courseName) missingData.push("Tên khóa học");
+        if (!studentName) missingData.push("Tên học viên");
+        if (!centerName) missingData.push("Tên cơ sở");
+        if (!id) missingData.push("Mã nhân viên");
+
+        // Nếu có dữ liệu thiếu, hiển thị thông báo lỗi rõ ràng
+        if (missingData.length > 0) {
+            document.body.innerHTML = `
+                <h2>Thiếu dữ liệu</h2>
+                <p>Các dữ liệu sau đang bị thiếu:</p>
+                <ul>
+                    ${missingData.map(data => `<li>${data}</li>`).join("")}
+                </ul>
+                <p>Vui lòng kiểm tra lại dữ liệu và thử lại.</p>
+            `;
+            console.error("Dữ liệu bị thiếu:", missingData);
+        } else {
+            // Nếu đủ dữ liệu, tiến hành gửi email
+            sendEmail(recipientEmail, studentName, courseName, centerName, id);
+        }
+    </script>
+</body>
+</html>
