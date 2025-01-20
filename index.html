@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email with PDF</title>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        h2 {
+            color: #F44336;
+        }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Đang gửi email...</h1>
+    <div class="spinner"></div>
+
+    <script>
+        async function createPDF(studentName, courseName) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            // Cài đặt font chữ Việt hóa
+            const fontUrl = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/fonts/Roboto-Regular-normal.ttf";
+            const fontResponse = await fetch(fontUrl);
+            const fontBlob = await fontResponse.arrayBuffer();
+            pdf.addFileToVFS("Roboto-Regular.ttf", fontBlob);
+            pdf.addFont("Roboto-Regular.ttf", "Roboto", "normal");
+            pdf.setFont("Roboto");
+
+            // Thêm text
+            pdf.setFontSize(16);
+            pdf.text(`CHỨNG NHẬN HOÀN THÀNH KHÓA HỌC`, 105, 20, { align: "center" });
+            pdf.setFontSize(12);
+            pdf.text(`Học viên: ${studentName}`, 20, 40);
+            pdf.text(`Khóa học: ${courseName}`, 20, 50);
+
+            // Thêm hình nền
+            const imageUrl = "https://i.imgur.com/Rhvxj8Z.jpg";
+            const img = await fetch(imageUrl).then(res => res.blob());
+            const imgBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.readAsDataURL(img);
+            });
+            pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120);
+
+            return pdf.output("datauristring");
+        }
+
+        async function sendEmail(recipientEmail, studentName, courseName, centerName) {
+            // Khởi tạo EmailJS
+            emailjs.init("your_user_id");
+
+            // Tạo file PDF
+            const pdfBase64 = await createPDF(studentName, courseName);
+
+            // Gửi email với nội dung và file đính kèm
+            const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
+            const emailBody = `
+                RIEM XÁC NHẬN:
+                Dear anh/chị đầu mối cơ sở ${centerName},
+
+                Học viên ${studentName} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
+
+                Trân trọng.
+            `;
+
+            emailjs.send("service_id", "template_id", {
+                to_email: recipientEmail,
+                subject: emailSubject,
+                message: emailBody,
+                pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
+            })
+            .then(() => {
+                document.body.innerHTML = `
+                    <h1>Email xác nhận đã được gửi!</h1>
+                    <p>Certificate has been sent to ${recipientEmail}.</p>
+                `;
+            })
+            .catch((error) => {
+                document.body.innerHTML = `
+                    <h2>Error sending email</h2>
+                    <p>${error.text}</p>
+                `;
+            });
+        }
+
+        // Lấy dữ liệu từ LocalStorage
+        const recipientEmail = localStorage.getItem("recipientEmail");
+        const courseName = localStorage.getItem("courseName");
+        const studentName = localStorage.getItem("studentName");
+        const centerName = localStorage.getItem("centerName");
+
+        // Kiểm tra dữ liệu và gửi email
+        if (recipientEmail && courseName && studentName && centerName) {
+            sendEmail(recipientEmail, studentName, courseName, centerName);
+        } else {
+            document.body.innerHTML = `
+                <h2>Error</h2>
+                <p>Missing email data. Please try again.</p>
+            `;
+        }
+    </script>
+</body>
+</html>
