@@ -69,35 +69,18 @@
                 // Nén ảnh JPEG (chỉ định chất lượng 0.3 để giảm kích thước)
                 pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120, undefined, "FAST", 0.3);
 
-                // Trả về PDF dưới dạng base64
-                const pdfBase64 = pdf.output("datauristring");
+                // Lưu file PDF và trả về URL
+                const pdfBlob = pdf.output("blob");
 
-                // Kiểm tra kích thước file PDF
-                const pdfSize = (new TextEncoder().encode(pdfBase64).length / 1024 / 1024).toFixed(2); // Kích thước tính theo MB
-                console.log(`Kích thước PDF: ${pdfSize} MB`);
+                // Tạo URL tải xuống cho PDF
+                const url = URL.createObjectURL(pdfBlob);
 
-                // Hiển thị kích thước PDF trên giao diện
+                // Hiển thị URL tải về
                 document.body.innerHTML += `
-                    <h2>Kích thước PDF: ${pdfSize} MB</h2>
+                    <h2><a href="${url}" target="_blank">Tải về PDF</a></h2>
                 `;
-
-                // Kiểm tra chiều dài của Base64 (tệp PDF đã mã hóa)
-                const base64Length = pdfBase64.length;
-                console.log("Base64 length:", base64Length);
                 
-                // Tính kích thước trong MB
-                const fileSizeInMB = base64Length / (1024 * 1024);
-                console.log("File size in MB:", fileSizeInMB);
-
-                // Nếu kích thước quá lớn (ví dụ: lớn hơn 10MB), không gửi email
-                if (pdfSize > 10) {
-                    document.body.innerHTML += `
-                        <h2>Kích thước file quá lớn, không thể gửi email.</h2>
-                    `;
-                    throw new Error("Kích thước file quá lớn, không thể gửi email.");
-                }
-
-                return pdfBase64;
+                return url;  // Trả về URL tải về
             } catch (error) {
                 console.error("Error creating PDF:", error);
                 throw new Error("Lỗi khi tạo PDF");
@@ -109,21 +92,23 @@
                 // Khởi tạo EmailJS
                 emailjs.init("6q3zUEAeQ3EKysg6Y");
 
-                // Tạo file PDF
-                const pdfBase64 = await createPDF(studentName, courseName);
+                // Tạo file PDF và lấy URL tải về
+                const pdfUrl = await createPDF(studentName, courseName);
 
-                // Kiểm tra xem PDF có hợp lệ không
-                if (!pdfBase64 || pdfBase64 === "") {
-                    throw new Error("PDF không hợp lệ");
+                // Kiểm tra xem URL có hợp lệ không
+                if (!pdfUrl || pdfUrl === "") {
+                    throw new Error("URL không hợp lệ");
                 }
 
-                // Gửi email với nội dung và file đính kèm
+                // Gửi email với nội dung và đường link tải PDF
                 const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
                 const emailBody = `
                     RIEM XÁC NHẬN:
                     Dear anh/chị đầu mối cơ sở ${centerName},
 
                     Học viên ${studentName}, mã nhân viên: ${id} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
+
+                    Tải về chứng nhận từ liên kết sau: <a href="${pdfUrl}" target="_blank">Tải về PDF</a>
 
                     Trân trọng.
                 `;
@@ -137,13 +122,13 @@
                     student_name: studentName,       // Truyền tên học viên vào template
                     course_name: courseName,         // Truyền tên khóa học vào template
                     sender_name: "Your Name",        // Tên người gửi
-                    pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
                 });
 
                 // Thông báo gửi email thành công
                 document.body.innerHTML = `
                     <h1>Email xác nhận đã được gửi!</h1>
                     <p>Certificate has been sent to ${recipientEmail}.</p>
+                    <p><a href="${pdfUrl}" target="_blank">Tải về chứng nhận tại đây</a></p>
                 `;
             } catch (error) {
                 // Xử lý lỗi nếu có
