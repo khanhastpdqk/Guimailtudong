@@ -1,50 +1,81 @@
-<script>
-    async function sendEmail(recipientEmail, studentName, courseName, centerName, id) {
-        try {
-            emailjs.init("6q3zUEAeQ3EKysg6Y");
-
-            const imageUrl = "https://i.imgur.com/Gappvr5.jpg";
-
-            const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
-            const emailBody = `
-                <p>RIEM XÁC NHẬN:</p>
-                <p>Dear anh/chị đầu mối cơ sở ${centerName},</p>
-                <p>Học viên <strong>${studentName}</strong>, mã nhân viên: <strong>${id}</strong> đã hoàn thành khóa học: <strong>${courseName}</strong>. Vui lòng ghi nhận thông tin này.</p>
-                <p>Anh/chị có thể xem ảnh chứng nhận tại liên kết sau:</p>
-                <p><a href="${imageUrl}" target="_blank">Xác nhận</a></p>
-                <p>Trân trọng,</p>
-                <p>-- TRUNG TÂM ĐÀO TẠO RIEM --</p>
-            `;
-
-            await emailjs.send("service_thphcyi", "template_qu58yjn", {
-                to_email: recipientEmail,
-                subject: emailSubject,
-                message: emailBody,
-                center_name: centerName,
-                student_name: studentName,
-                course_name: courseName,
-                sender_name: "Your Name",
-                image_link: imageUrl,
-                id: id,
-            });
-
-            document.body.innerHTML = `<h1>Email xác nhận đã được gửi!</h1>`;
-        } catch (error) {
-            document.body.innerHTML = `<h2>Error sending email</h2><p>${error.message}</p>`;
-            console.error("Error sending email:", error);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email with Image Link</title>
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3.2.0/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
         }
-    }
+        h1 {
+            color: #4CAF50;
+        }
+        h2 {
+            color: #F44336;
+        }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #4CAF50;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Đang gửi email...</h1>
+    <div class="spinner"></div>
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const recipientEmail = urlParams.get("email");
-    const courseName = urlParams.get("course");
-    const studentName = urlParams.get("name");
-    const centerName = urlParams.get("center");
-    const id = urlParams.get("id");
+    <script>
+        async function sendEmail(recipientEmail, studentName, courseName, centerName, id) {
+            try {
+                // Khởi tạo EmailJS
+                emailjs.init("6q3zUEAeQ3EKysg6Y");
 
-    if (!recipientEmail || !courseName || !studentName || !centerName || !id) {
-        document.body.innerHTML = `<h2>Thiếu dữ liệu</h2>`;
-    } else {
-        sendEmail(recipientEmail, studentName, courseName, centerName, id);
-    }
-</script>
+                // Đường link ảnh
+                const imageUrl = "https://i.imgur.com/Gappvr5.jpg";
+
+                // Gửi email với nội dung và đường link ảnh
+                const emailSubject = `BÁO CÁO HOÀN THÀNH KHÓA HỌC: ${courseName}`;
+                const emailBody = `
+                    RIEM XÁC NHẬN:
+                    Dear anh/chị đầu mối cơ sở ${centerName},
+
+                    Học viên ${studentName}, mã nhân viên: ${id} đã hoàn thành khóa học: ${courseName}. Vui lòng ghi nhận thông tin này.
+
+                    Anh/chị có thể xem ảnh chứng nhận tại liên kết sau:
+                    <a href="${imageUrl}" target="_blank">${imageUrl}</a>
+
+                    Trân trọng.
+                `;
+
+                // Gửi email qua EmailJS
+                await emailjs.send("service_thphcyi", "template_qu58yjn", {
+                    to_email: recipientEmail,
+                    subject: emailSubject,
+                    message: emailBody,
+                    center_name: centerName,
+                    student_name: studentName,
+                    course_name: courseName,
+                    sender_name: "Your Name",
+                    image_link: imageUrl,
+                    id: id, // Truyền id vào template
+                });
+
+                // Thông báo gửi email thành công
+                document.body.innerHTML = `
+                    <h1>Email xác nhận đã được gửi!</h1>
+                    <p>Image link has been sent to ${recipientEmail}.</p>
+                `;
+            
