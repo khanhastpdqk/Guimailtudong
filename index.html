@@ -66,8 +66,8 @@
                     reader.readAsDataURL(img);
                 });
 
-                // Nén ảnh JPEG (chỉ định chất lượng 0.5 để giảm kích thước)
-                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120, undefined, "FAST", 0.5);
+                // Nén ảnh JPEG (chỉ định chất lượng 0.3 để giảm kích thước)
+                pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120, undefined, "FAST", 0.3);
 
                 // Trả về PDF dưới dạng base64
                 const pdfBase64 = pdf.output("datauristring");
@@ -80,6 +80,14 @@
                 document.body.innerHTML += `
                     <h2>Kích thước PDF: ${pdfSize} MB</h2>
                 `;
+
+                // Nếu kích thước quá lớn (ví dụ: lớn hơn 10MB), không gửi email
+                if (pdfSize > 10) {
+                    document.body.innerHTML += `
+                        <h2>Kích thước file quá lớn, không thể gửi email.</h2>
+                    `;
+                    throw new Error("Kích thước file quá lớn, không thể gửi email.");
+                }
 
                 return pdfBase64;
             } catch (error) {
