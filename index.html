@@ -109,11 +109,11 @@
             });
         }
 
-        // Lấy dữ liệu từ LocalStorage
-        const recipientEmail = localStorage.getItem("recipientEmail");
-        const courseName = localStorage.getItem("courseName");
-        const studentName = localStorage.getItem("studentName");
-        const centerName = localStorage.getItem("tencs");
+       const urlParams = new URLSearchParams(window.location.search);
+const recipientEmail = urlParams.get("email");
+const courseName = urlParams.get("course");
+const studentName = urlParams.get("name");
+const centerName = urlParams.get("center");
 
        // Kiểm tra dữ liệu và xác định dữ liệu thiếu
 const missingData = [];
