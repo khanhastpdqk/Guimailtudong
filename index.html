@@ -100,6 +100,10 @@
                     to_email: recipientEmail,
                     subject: emailSubject,
                     message: emailBody,
+                    center_name: centerName,          // Truyền thông tin cơ sở vào template
+                    student_name: studentName,       // Truyền tên học viên vào template
+                    course_name: courseName,         // Truyền tên khóa học vào template
+                    sender_name: "Your Name",        // Tên người gửi
                     pdf_attachment: pdfBase64.split(",")[1], // Loại bỏ phần "data:application/pdf;base64,"
                 });
 
