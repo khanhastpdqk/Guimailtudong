@@ -80,6 +80,13 @@
                 document.body.innerHTML += `
                     <h2>Kích thước PDF: ${pdfSize} MB</h2>
                 `;
+                // Kiểm tra chiều dài của Base64 (tệp PDF đã mã hóa)
+                    const base64Length = pdfBase64.length;
+                    console.log("Base64 length:", base64Length);
+                    
+                    // Tính kích thước trong MB
+                    const fileSizeInMB = base64Length / (1024 * 1024);
+                    console.log("File size in MB:", fileSizeInMB);
 
                 // Nếu kích thước quá lớn (ví dụ: lớn hơn 10MB), không gửi email
                 if (pdfSize > 10) {
