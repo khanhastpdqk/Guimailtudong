@@ -43,11 +43,14 @@
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
 
-            // Cài đặt font chữ Việt hóa
+            // Tải font Việt hóa (Roboto-Regular) từ Google Fonts dưới dạng Base64
             const fontUrl = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/fonts/Roboto-Regular-normal.ttf";
             const fontResponse = await fetch(fontUrl);
             const fontBlob = await fontResponse.arrayBuffer();
-            pdf.addFileToVFS("Roboto-Regular.ttf", fontBlob);
+            const base64Font = arrayBufferToBase64(fontBlob);
+            
+            // Thêm font vào VFS (Virtual File System) của jsPDF
+            pdf.addFileToVFS("Roboto-Regular.ttf", base64Font);
             pdf.addFont("Roboto-Regular.ttf", "Roboto", "normal");
             pdf.setFont("Roboto");
 
@@ -69,6 +72,17 @@
             pdf.addImage(imgBase64, "JPEG", 0, 60, 210, 120);
 
             return pdf.output("datauristring");
+        }
+
+        // Hàm chuyển ArrayBuffer thành Base64
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const length = bytes.byteLength;
+            for (let i = 0; i < length; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
         }
 
         async function sendEmail(recipientEmail, studentName, courseName, centerName) {
@@ -114,13 +128,8 @@ const recipientEmail = urlParams.get("email");
 const courseName = urlParams.get("course");
 const studentName = urlParams.get("name");
 const centerName = urlParams.get("center");
-        console.log("URL search:", window.location.search);
-console.log("recipientEmail:", recipientEmail);
-console.log("courseName:", courseName);
-console.log("studentName:", studentName);
-console.log("centerName:", centerName);
 
-       // Kiểm tra dữ liệu và xác định dữ liệu thiếu
+        // Kiểm tra dữ liệu và xác định dữ liệu thiếu
 const missingData = [];
 if (!recipientEmail) missingData.push("Địa chỉ email");
 if (!courseName) missingData.push("Tên khóa học");
